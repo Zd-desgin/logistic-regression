@@ -1,0 +1,56 @@
+import numpy as np
+from matplotlib import pyplot as plt
+from sklearn.model_selection import train_test_split
+
+# loading data
+data = np.loadtxt('data2.txt',delimiter=',') #读取data1的数据  delomiter 分隔符 数据使用“，”断开
+print(data.shape)    #输出数据的类型
+num_feature = data.shape[1] - 1 # 特征类型只有2个
+print(num_feature)
+data = data.astype('float32')  #转化数据类型  32位
+
+
+# 划分数据集
+data_norm = data.copy()
+data_train, data_test = train_test_split(data_norm, test_size=0.3, random_state=42)
+
+maximum_d = np.max(data_train,axis=0,keepdims=True) # keepdims保持矩阵的二维特性  找出矩阵中每一列最大的元素 ；axis 0纵轴，1横轴  
+minimun_d = np.min(data_train,axis=0,keepdims=True) # 找出矩阵每一列最小的元素
+
+maximum_t = np.max(data_test,axis=0,keepdims=True) # keepdims保持矩阵的二维特性  找出矩阵中每一列最大的元素 ；axis 0纵轴，1横轴  
+minimun_t = np.min(data_test,axis=0,keepdims=True) # 找出矩阵每一列最小的元素
+ 
+data_train = (data_train - minimun_d)/(maximum_d - minimun_d)   # 最值归一化公式 
+data_test = (data_test - minimun_t)/(maximum_t - minimun_t)
+
+X_train = data_train[:, :2]
+X_train = np.concatenate((X_train, np.ones((X_train.shape[0],1))), axis=1)
+y_train = data_train[:, 2].reshape(-1,1)
+X_test = data_test[:, :2]
+X_test = np.concatenate((X_test, np.ones((X_test.shape[0],1))), axis=1)
+y_test = data_test[:, 2].reshape(-1,1)
+# print(X_train)
+
+theta = np.zeros([3,1])
+theta1 = np.zeros([3,1])
+print(theta)
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+def cost(y_pred, y): # 极大似然函数求代价值
+    left = -y * np.log(y_pred)
+    right = -(1 - y) * np.log(1 - y_pred)
+    return np.mean(left + right)
+def model(X, theta):
+    return sigmoid(np.matmul(X, theta))
+
+
+iterations = 40000
+lr = 0.08
+log = []
+for j in range(iterations):
+    y_pred = model(X_train, theta1)
+    grad = lr*np.mean((y_pred-y_train)*X_train, axis=0).reshape(-1,1)
+    theta1 -= grad
+    loss = cost(y_pred,y_train)
+#     print('iter:{},loss:{}'.format(i,loss))
+    log1.append([j,loss])
